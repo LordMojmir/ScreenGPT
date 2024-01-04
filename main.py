@@ -47,6 +47,7 @@ def on_submit(entry, submit_button, response_label, root, screen_content, event=
 
 
 
+
 def on_activate():
     global is_window_open, is_hotkey_active
 
@@ -66,6 +67,9 @@ def on_activate():
     center_x = int(screen_width / 2 - window_width / 2)
     center_y = int(screen_height / 2 - window_height / 2)
     root.geometry(f'{window_width}x{window_height}+{center_x}+{center_y}')
+
+    # Make the window stay on top
+    root.attributes('-topmost', True)
 
     entry = ctk.CTkEntry(root, width=300)
     entry.pack(pady=10)
@@ -101,7 +105,7 @@ def for_canonical(f):
 print("Listening for hotkey...")
 
 hotkey = keyboard.HotKey(
-    {keyboard.Key.ctrl, keyboard.KeyCode.from_char('h')},
+    {keyboard.Key.ctrl, keyboard.KeyCode.from_char('u')},
     on_activate)
 
 with keyboard.Listener(
