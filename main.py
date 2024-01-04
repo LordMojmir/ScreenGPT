@@ -5,14 +5,17 @@ import easyocr
 import os
 from ai_req import query_custom_gpt
 
-# Global variable to track if the window is open
+# Global variables to track the state
 is_window_open = False
+is_hotkey_active = True
+
 
 def read_screenshot(image_path):
     reader = easyocr.Reader(['en'])
-    results = reader.readtext(image_path)
+    results = reader.readtext(image_path, paragraph=True)
     recognized_text = " ".join([detection[1] for detection in results])
     return recognized_text
+
 
 def process_screen_content():
     screenshot = ImageGrab.grab()
@@ -21,13 +24,14 @@ def process_screen_content():
     screen_content_str = read_screenshot(screenshot_path)
     return screen_content_str
 
-def on_submit(entry, submit_button, response_label, root, screen_content):
+
+def on_submit(entry, submit_button, response_label, root, screen_content, event=None):
     user_input = entry.get()
     print("Input Submitted:", user_input)
     gpt_response = query_custom_gpt(screen_content, user_input)
     print("GPT-3 Response:", gpt_response)
 
-    # Update the GUI with the GPT-3 response and resize the window
+    # Update the GUI with the GPT-3 response
     response_label.configure(text=gpt_response)
     response_label.pack(pady=10)
 
@@ -37,16 +41,20 @@ def on_submit(entry, submit_button, response_label, root, screen_content):
     # Disable the submit button
     submit_button.configure(state='disabled')
 
-def on_activate():
-    global is_window_open
+    # Reset hotkey
+    global is_hotkey_active
+    is_hotkey_active = True
 
-    if is_window_open:
-        print("Window is already open.")
+
+
+def on_activate():
+    global is_window_open, is_hotkey_active
+
+    if is_window_open or not is_hotkey_active:
         return
 
     is_window_open = True
-    screen_content_str = process_screen_content()
-    print("Screen content:", screen_content_str)
+    is_hotkey_active = False
 
     root = ctk.CTk()
     root.title("Input")
@@ -65,22 +73,30 @@ def on_activate():
     submit_button = ctk.CTkButton(root, text="Submit")
     submit_button.pack(pady=10)
 
-    response_label = ctk.CTkLabel(root, text="", wraplength=window_width-20)
+    response_label = ctk.CTkLabel(root, text="", wraplength=window_width - 20)
+
+    # Capture and process screen content
+    screen_content_str = process_screen_content()
+    print("Screen content:", screen_content_str)
 
     # Set the command of the submit button
+    root.bind('<Return>', lambda event: on_submit(entry, submit_button, response_label, root, screen_content_str, event))
     submit_button.configure(command=lambda: on_submit(entry, submit_button, response_label, root, screen_content_str))
 
     root.protocol("WM_DELETE_WINDOW", lambda: on_close(root))
     root.mainloop()
+
 
 def on_close(root):
     global is_window_open
     is_window_open = False
     root.destroy()
 
+
 def for_canonical(f):
     listener = keyboard.Listener(on_press=lambda k: k)
     return lambda k: f(listener.canonical(k))
+
 
 print("Listening for hotkey...")
 
