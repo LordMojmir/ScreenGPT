@@ -3,7 +3,6 @@ from pynput import keyboard
 from PIL import ImageGrab
 import easyocr
 import os
-import time
 from ai_req import query_custom_gpt
 
 def read_screenshot(image_path):
@@ -19,15 +18,18 @@ def process_screen_content():
     screen_content_str = read_screenshot(screenshot_path)
     return screen_content_str
 
-def on_submit(entry, submit_button, response_label, screen_content):
+def on_submit(entry, submit_button, response_label, root, screen_content):
     user_input = entry.get()
     print("Input Submitted:", user_input)
     gpt_response = query_custom_gpt(screen_content, user_input)
     print("GPT-3 Response:", gpt_response)
 
-    # Update the GUI with the GPT-3 response
+    # Update the GUI with the GPT-3 response and resize the window
     response_label.configure(text=gpt_response)
     response_label.pack(pady=10)
+
+    # Resize the window to fit the response label
+    root.geometry("400x300")  # Adjusted height to 300
 
     # Disable the submit button
     submit_button.configure(state='disabled')
@@ -40,7 +42,7 @@ def on_activate():
     root.title("Input")
 
     window_width = 400
-    window_height = 100
+    window_height = 100  # Initial height
     screen_width = root.winfo_screenwidth()
     screen_height = root.winfo_screenheight()
     center_x = int(screen_width / 2 - window_width / 2)
@@ -55,20 +57,20 @@ def on_activate():
 
     response_label = ctk.CTkLabel(root, text="", wraplength=window_width-20)
 
-    # Set the command of the submit button after creating the response label
-    submit_button.configure(command=lambda: on_submit(entry, submit_button, response_label, screen_content_str))
+    # Set the command of the submit button
+    submit_button.configure(command=lambda: on_submit(entry, submit_button, response_label, root, screen_content_str))
 
+    root.protocol("WM_DELETE_WINDOW", lambda: root.destroy())
     root.mainloop()
-
-    # Block input for 30 seconds
-    time.sleep(30)
 
 def for_canonical(f):
     listener = keyboard.Listener(on_press=lambda k: k)
     return lambda k: f(listener.canonical(k))
 
+print("Listening for hotkey...")
+
 hotkey = keyboard.HotKey(
-    {keyboard.Key.ctrl, keyboard.KeyCode.from_char('s'), keyboard.KeyCode.from_char('m')},
+    {keyboard.Key.ctrl, keyboard.KeyCode.from_char('h')}, # , keyboard.KeyCode.from_char('m')
     on_activate)
 
 with keyboard.Listener(
