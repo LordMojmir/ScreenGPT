@@ -2,10 +2,9 @@ import customtkinter as ctk
 from pynput import keyboard
 from PIL import ImageGrab
 import easyocr
-import ctypes
 import os
+import time
 from ai_req import query_custom_gpt
-
 
 def read_screenshot(image_path):
     reader = easyocr.Reader(['en'])
@@ -20,12 +19,18 @@ def process_screen_content():
     screen_content_str = read_screenshot(screenshot_path)
     return screen_content_str
 
-
-def on_submit(entry, screen_content):
+def on_submit(entry, submit_button, response_label, screen_content):
     user_input = entry.get()
     print("Input Submitted:", user_input)
     gpt_response = query_custom_gpt(screen_content, user_input)
     print("GPT-3 Response:", gpt_response)
+
+    # Update the GUI with the GPT-3 response
+    response_label.configure(text=gpt_response)
+    response_label.pack(pady=10)
+
+    # Disable the submit button
+    submit_button.configure(state='disabled')
 
 def on_activate():
     screen_content_str = process_screen_content()
@@ -45,10 +50,18 @@ def on_activate():
     entry = ctk.CTkEntry(root, width=300)
     entry.pack(pady=10)
 
-    submit_button = ctk.CTkButton(root, text="Submit", command=lambda: on_submit(entry, screen_content_str))
+    submit_button = ctk.CTkButton(root, text="Submit")
     submit_button.pack(pady=10)
 
+    response_label = ctk.CTkLabel(root, text="", wraplength=window_width-20)
+
+    # Set the command of the submit button after creating the response label
+    submit_button.configure(command=lambda: on_submit(entry, submit_button, response_label, screen_content_str))
+
     root.mainloop()
+
+    # Block input for 30 seconds
+    time.sleep(30)
 
 def for_canonical(f):
     listener = keyboard.Listener(on_press=lambda k: k)
@@ -62,5 +75,3 @@ with keyboard.Listener(
         on_press=for_canonical(hotkey.press),
         on_release=for_canonical(hotkey.release)) as listener:
     listener.join()
-
-
