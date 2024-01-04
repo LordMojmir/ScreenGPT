@@ -41,9 +41,16 @@ def on_submit(entry, submit_button, response_label, root, screen_content, event=
     # Disable the submit button
     submit_button.configure(state='disabled')
 
-    # Reset hotkey
-    global is_hotkey_active
-    is_hotkey_active = True
+
+def on_close(root):
+    global is_window_open, is_hotkey_active
+    is_window_open = False
+    is_hotkey_active = True  # Reset the hotkey activation
+    root.destroy()
+
+
+# The rest of your code remains unchanged
+
 
 
 
@@ -64,8 +71,8 @@ def on_activate():
     window_height = 100  # Initial height
     screen_width = root.winfo_screenwidth()
     screen_height = root.winfo_screenheight()
-    center_x = int(screen_width / 2 - window_width / 2)
-    center_y = int(screen_height / 2 - window_height / 2)
+    center_x = int(screen_width / 2 )
+    center_y = int(screen_height / 2)
     root.geometry(f'{window_width}x{window_height}+{center_x}+{center_y}')
 
     # Make the window stay on top
@@ -92,8 +99,10 @@ def on_activate():
 
 
 def on_close(root):
-    global is_window_open
+    global is_window_open, is_hotkey_active
     is_window_open = False
+    is_hotkey_active = True  # Reset the hotkey activation
+    print(f"Waiting for new input {is_hotkey_active}")
     root.destroy()
 
 
