@@ -5,6 +5,9 @@ import easyocr
 import os
 from ai_req import query_custom_gpt
 
+# Global variable to track if the window is open
+is_window_open = False
+
 def read_screenshot(image_path):
     reader = easyocr.Reader(['en'])
     results = reader.readtext(image_path)
@@ -35,6 +38,13 @@ def on_submit(entry, submit_button, response_label, root, screen_content):
     submit_button.configure(state='disabled')
 
 def on_activate():
+    global is_window_open
+
+    if is_window_open:
+        print("Window is already open.")
+        return
+
+    is_window_open = True
     screen_content_str = process_screen_content()
     print("Screen content:", screen_content_str)
 
@@ -60,8 +70,13 @@ def on_activate():
     # Set the command of the submit button
     submit_button.configure(command=lambda: on_submit(entry, submit_button, response_label, root, screen_content_str))
 
-    root.protocol("WM_DELETE_WINDOW", lambda: root.destroy())
+    root.protocol("WM_DELETE_WINDOW", lambda: on_close(root))
     root.mainloop()
+
+def on_close(root):
+    global is_window_open
+    is_window_open = False
+    root.destroy()
 
 def for_canonical(f):
     listener = keyboard.Listener(on_press=lambda k: k)
@@ -70,7 +85,7 @@ def for_canonical(f):
 print("Listening for hotkey...")
 
 hotkey = keyboard.HotKey(
-    {keyboard.Key.ctrl, keyboard.KeyCode.from_char('h')}, # , keyboard.KeyCode.from_char('m')
+    {keyboard.Key.ctrl, keyboard.KeyCode.from_char('h')},
     on_activate)
 
 with keyboard.Listener(
