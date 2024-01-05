@@ -54,6 +54,7 @@ def on_close(root):
     global is_window_open, is_hotkey_active
     is_window_open = False
     is_hotkey_active = True  # Reset the hotkey activation
+    print(f"Waiting for new input {is_hotkey_active}")
     root.destroy()
 
 def on_activate():
