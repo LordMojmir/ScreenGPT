@@ -67,7 +67,7 @@ def on_activate():
     is_hotkey_active = False
 
     root = ctk.CTk()
-    root.title("Input")
+    root.title("ScreenGPT")
     window_width, window_height = 400, 100
     screen_width, screen_height = root.winfo_screenwidth(), root.winfo_screenheight()
     center_x, center_y = int(screen_width / 2), int(screen_height / 2)
@@ -94,7 +94,9 @@ def for_canonical(f):
     listener = keyboard.Listener(on_press=lambda k: k)
     return lambda k: f(listener.canonical(k))
 
-print("Listening for hotkey...")
+read_screenshot('./screenshot.png')
+
+print("Listening for ctrl + u ...")
 
 hotkey = keyboard.HotKey(
     {keyboard.Key.ctrl, keyboard.KeyCode.from_char('u')},
