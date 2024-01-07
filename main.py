@@ -89,7 +89,7 @@ def on_activate():
 
     def set_speech_input():
         speech_input_val = listen_for_input()
-        entry.insert(0, speech_input_val)
+        root.after(0, lambda: entry.insert(0, speech_input_val))
 
     speech_thread = threading.Thread(target=set_speech_input)
     speech_thread.start()
