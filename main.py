@@ -4,10 +4,12 @@ from PIL import ImageGrab
 import easyocr
 import os
 from ai_req import query_custom_gpt
-
+from text2speach import text_to_speech
+from speech2text import listen_continuously, listen_for_input
 # Global variables to track the state
 is_window_open = False
 is_hotkey_active = True
+import threading
 
 
 def read_screenshot(image_path):
@@ -30,6 +32,7 @@ def on_submit(entry, submit_button, response_label, root, screen_content, event=
     print("Input Submitted:", user_input)
     gpt_response = query_custom_gpt(screen_content, user_input)
     print("GPT-3 Response:", gpt_response)
+    text_to_speech(gpt_response)
 
     # Update the GUI with the GPT-3 response
     response_label.configure(text=gpt_response)
@@ -49,12 +52,6 @@ def on_close(root):
     root.destroy()
 
 
-# The rest of your code remains unchanged
-
-
-
-
-
 def on_activate():
     global is_window_open, is_hotkey_active
 
@@ -65,7 +62,7 @@ def on_activate():
     is_hotkey_active = False
 
     root = ctk.CTk()
-    root.title("Input")
+    root.title("ScreenGPT")
 
     window_width = 400
     window_height = 100  # Initial height
@@ -85,6 +82,17 @@ def on_activate():
     submit_button.pack(pady=10)
 
     response_label = ctk.CTkLabel(root, text="", wraplength=window_width - 20)
+
+    text_to_speech("What can I assist you with?")
+    # speech_input_val = listen_continuously()
+    # entry.insert(0, speech_input_val)
+
+    def set_speech_input():
+        speech_input_val = listen_for_input()
+        entry.insert(0, speech_input_val)
+
+    speech_thread = threading.Thread(target=set_speech_input)
+    speech_thread.start()
 
     # Capture and process screen content
     screen_content_str = process_screen_content()
